@@ -1,29 +1,16 @@
-import { Router } from 'express';
-import { GenericController } from "../controllers/Generic.controller";
-import StoreAdmin from "../Models/StoreAdmin.model";
-import { AuthController } from "../controllers/Auth.controller";
+import express from 'express';
 
+import controller from '../controllers/Store.controller';
 
-const storeAdminController = new GenericController(StoreAdmin);
-const authController = new AuthController(StoreAdmin);
+const storeAdminRouter = express.Router();
 
-const router = Router();
+storeAdminRouter.post('/createProduct/:storeId', controller.createProduct);
+storeAdminRouter.get('/getProducts/:storeId', controller.getProducts);
 
-router.get('/storeAdmins', storeAdminController.getAll);
-router.get('/storeAdmins/:id', storeAdminController.getOne);
-router.post('/storeAdmins', storeAdminController.create);
-router.put('/storeAdmins/:id', storeAdminController.update);
-router.delete('/storeAdmins/:id', storeAdminController.delete);
-
-router.post('/storeAdmins/signup', authController.signUp);
-router.post('/storeAdmins/login', authController.login);
-//create a sample body for testing the signup route
+// create json to test create product
 // {
-//     "email": "test@test",
-//     "password": "test",
-//     "firstName": "test",
-//     "lastName": "test",
-//     "phone": "test"
+//     "name": "Product 1",
+//     "image": "https://picsum.photos/200",
+//     "price": 100
 // }
-
-export default router;
+export = storeAdminRouter;

@@ -1,20 +1,9 @@
-import { Router } from "express";
-import { GenericController } from "../controllers/Generic.controller";
-import Customer from "../Models/Customer.model";
-import { AuthController } from "../controllers/Auth.controller";
+import express from "express";
+import controller from '../controllers/Customer.controller';
 
-const customerController = new GenericController(Customer);
-const authController = new AuthController(Customer);
 
-const router = Router();
+const CustomerRouter = express.Router();
 
-router.get("/customers", customerController.getAll);
-router.get("/customers/:id", customerController.getOne);
-router.post("/customers", customerController.create);
-router.put("/customers/:id", customerController.update);
-router.delete("/customers/:id", customerController.delete);
+CustomerRouter.get("/products", controller.getProductsByFilter);
 
-// Add authentication routes
-router.post('/customers/signup', authController.signUp);
-router.post('/customers/login', authController.login);
-export default router;
+export default CustomerRouter;

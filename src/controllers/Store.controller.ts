@@ -5,7 +5,10 @@ import User from "../Models/User.model";
 import Product from "../Models/Product.model";
 import Logger from "../library/logging";
 
-const createProduct = async (req: Request, res: Response, next: NextFunction) => {
+
+
+
+const createProduct = async (req, res, next) => {
     try {
         const storeId = req.params.storeId;
         const store = await User.findById(storeId);
@@ -14,10 +17,13 @@ const createProduct = async (req: Request, res: Response, next: NextFunction) =>
             return res.status(404).json({ message: "Store not found" });
         }
 
+        // Assuming your product model has a 'image' field
         const product = {
             ...req.body,
-            store: storeId
+            store: storeId,
+            image: req.file ? req.file.path : undefined // Use the path of the uploaded image
         };
+
         await Product.create(product);
 
         res.status(201).json(product);
@@ -43,8 +49,23 @@ const getProducts = async (req: Request, res: Response, next: NextFunction) => {
             return res.status(404).json({ message: "Store not found" });
         }
 
-        const products = await Product.find({ store: storeId });
-        res.status(200).json(products);
+        const items = await Product.find({ store: storeId });
+        const storeIds = items.map((item) => item.store);
+      const stores = await User.find({ _id: { $in: storeIds } });
+      const storeMap = {};
+      stores.forEach((store) => {
+        storeMap[store.id] = store.name;
+      });
+      var itemsNew = items.map((item) => {
+        return {
+          id: item.id,
+          name: item.name,
+          image: item.image,
+          price: item.price,
+          store: storeMap[item.store]
+        }
+      })
+        res.status(200).json(itemsNew);
     } catch (error) {
         next(error);
     }

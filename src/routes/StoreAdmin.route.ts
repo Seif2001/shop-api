@@ -4,13 +4,24 @@ import controller from '../controllers/Store.controller';
 
 const storeAdminRouter = express.Router();
 
-storeAdminRouter.post('/createProduct/:storeId', controller.createProduct);
+const multer = require('multer');
+
+// Set up multer to store files in a 'uploads' directory
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + '.' + file.mimetype.split('/')[1]);
+  }
+});
+
+const upload = multer({ storage: storage });
+
+
+storeAdminRouter.post('/createProduct/:storeId', upload.single('image'),controller.createProduct);
 storeAdminRouter.get('/getProducts/:storeId', controller.getProducts);
 storeAdminRouter.get('/', controller.getAllStores);
-// create json to test create product
-// {
-//     "name": "Product 1",
-//     "image": "https://picsum.photos/200",
-//     "price": 100
-// }
+
 export = storeAdminRouter;

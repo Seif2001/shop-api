@@ -7,6 +7,7 @@ import config from "./config/config";
 import Logger from "./library/logging";
 import http from "http";
 import authRouter from "./routes/auth.route";
+import cors from "cors";  // Import the cors middleware
 
 
 const router = express();
@@ -20,6 +21,7 @@ mongoose.connect(config.mongo.url, ).then(() => {
 });
 
 const startServer = () => {
+    router.use(cors());  
     router.use((req, res, next) => {
         Logger.info(`Request URL: ${req.url}, Method: ${req.method}, IP: ${req.ip}`);
 

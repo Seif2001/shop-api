@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 
 import User from "../Models/User.model";
 import Product from "../Models/Product.model";
+import Logger from "../library/logging";
 
 const createProduct = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -24,7 +25,15 @@ const createProduct = async (req: Request, res: Response, next: NextFunction) =>
         next(error);
     }
 }
-
+const getAllStores = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const stores = await User.find({ isStore:true }).select({name:1});
+        Logger.info(stores);
+        res.status(200).json(stores);
+    } catch (error) {
+        next(error);
+    }
+}
 const getProducts = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const storeId = req.params.storeId;
@@ -79,5 +88,6 @@ export default {
     createProduct,
     getProducts,
     updateProduct,
-    deleteProduct
+    deleteProduct,
+    getAllStores
 };

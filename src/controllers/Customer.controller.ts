@@ -4,15 +4,9 @@ import mongoose from "mongoose";
 import User from "../Models/User.model";
 import Product from "../Models/Product.model";
 import Logger from "../library/logging";
+import { ObjectId } from "mongodb";
 
-const getCustomer = async (req: Request, res: Response) => {
-    try {
-      const item = await User.findById(req.params.id);
-      return res.status(200).json(item);
-    } catch (error) {
-      return res.status(500).json(error);
-    }
-};
+
 
 
 const updateCustomer = async (req: Request, res: Response) => {
@@ -58,16 +52,33 @@ const getProductsByFilter = async (req: Request, res: Response) => {
       else if (sortBy) {
         items = await Product.find().sort({price: ( sortBy === "priceAsc" )? 1: -1, name: ( sortBy === "nameAsc" ) ? 1: -1}).exec();
       }
-      
-      return res.status(200).json(items);
+       // Map each store ID to its name
+      const storeIds = items.map((item) => item.store);
+      const stores = await User.find({ _id: { $in: storeIds } });
+      const storeMap = {};
+      stores.forEach((store) => {
+        storeMap[store.id] = store.name;
+      });
+      var itemsNew = items.map((item) => {
+        return {
+          id: item.id,
+          name: item.name,
+          image: item.image,
+          price: item.price,
+          store: storeMap[item.store]
+        }
+      })
+      return res.status(200).json(itemsNew);
 
     } catch (error) {
       return res.status(500).json(error);
     }
 }
 
+
+
 export default {
-    getCustomer,
+    
     updateCustomer,
     deleteCustomer,
     getProductsByFilter

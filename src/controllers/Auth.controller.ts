@@ -5,6 +5,7 @@ import { Document, Model } from 'mongoose';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import  User from '../Models/User.model';
+import Logger from '../library/logging';
 
 export class AuthController {
   
@@ -13,8 +14,9 @@ export class AuthController {
     try {
       const hashedPassword = await bcrypt.hash(req.body.password, 10);      
       const user = await User.create({ ...req.body, password: hashedPassword });
-      
-      return res.status(201).json(user);
+      const token = jwt.sign({ user: user }, 'secret', { expiresIn: '1h' });
+      console.log(token);
+      return res.status(201).json(token);
     } catch (error) {
       console.log(error);
       
@@ -24,8 +26,8 @@ export class AuthController {
 
   login = async (req: Request, res: Response) => {
     try {
-      const { email, password } = req.body;
-      const user = await User.findOne({ email });
+      const { phone, password } = req.body;
+      const user = await User.findOne({ phone });
 
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
@@ -37,11 +39,47 @@ export class AuthController {
         return res.status(401).json({ message: 'Invalid password' });
       }
 
-      const token = jwt.sign({ userId: user }, 'secret', { expiresIn: '1h' });
+      const token = jwt.sign({ user: user }, 'secret');
 
-      return res.status(200).json({ token });
+      return res.status(200).json( token );
     } catch (error) {
       return res.status(500).json(error);
     }
   };
+  getUser = async (req: Request, res: Response) => {
+    //get user by the header token
+
+    try {
+      const token = req.header('Authorization')?.replace('Bearer ', '');
+      if (!token) {
+        return res.status(401).json({ message: 'Unauthorized: No token provided' });
+      }
+      const decoded = jwt.verify(JSON.parse(token), 'secret');
+      Logger.info(decoded);
+      const user = await User.findById(decoded.user._id);
+      return res.status(200).json(user);
+    } catch (error) {
+      Logger.error(error);
+      return res.status(500).json(error);
+    }
+  };
+
+  checkPhone = async (req: Request, res: Response) => {
+    try {
+      const {phone} = req.body;
+      const user = User.find({phone: phone});
+      if((await user).length > 0){
+        return res.status(200).json({found: "true"});
+      }
+      else{
+        return res.status(200).json({found: "false"});
+      }
+    }catch(error){
+      Logger.error(error);
+      return res.status(500).json(error);
+    }
+  }
+
+ 
+
 }

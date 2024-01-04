@@ -2,12 +2,13 @@
 import {NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import User, { IUser } from '../Models/User.model';
+import Logger from '../library/logging';
 
 export const authenticateUser = (admin:boolean) => {
   return async (req: any, res: any, next: NextFunction) => {
     // Get the token from the request headers
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-
+    let token = req.header('Authorization')?.replace('Bearer ', '');
+    token = token.replace(/"/g, '');
     if (!token) {
       return res.status(401).json({ message: 'Unauthorized: No token provided' });
     }
@@ -15,9 +16,8 @@ export const authenticateUser = (admin:boolean) => {
     try {
       // Verify the token using the secret key
       const decoded = jwt.verify(token, 'secret');
-
       // Check if the user exists in the specified model
-      const user = await User.findById(decoded.userId) as IUser;
+      const user = await User.findById(decoded.user._id) as IUser;
       
 
       if (!user) {

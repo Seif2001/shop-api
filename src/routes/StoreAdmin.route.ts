@@ -1,6 +1,7 @@
 import express from 'express';
 
 import controller from '../controllers/Store.controller';
+import { authenticateUser } from '../middleware/auth';
 
 const storeAdminRouter = express.Router();
 
@@ -20,8 +21,8 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 
-storeAdminRouter.post('/createProduct/:storeId', upload.single('image'),controller.createProduct);
-storeAdminRouter.get('/getProducts/:storeId', controller.getProducts);
-storeAdminRouter.get('/', controller.getAllStores);
+storeAdminRouter.post('/createProduct/:storeId',authenticateUser(true), upload.single('image'),controller.createProduct);
+storeAdminRouter.get('/getProducts/:storeId',authenticateUser(true), controller.getProducts);
+storeAdminRouter.get('/', authenticateUser(false),controller.getAllStores);
 
 export = storeAdminRouter;

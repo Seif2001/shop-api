@@ -41,7 +41,7 @@ export class AuthController {
 
       const token = jwt.sign({ user: user }, 'secret');
 
-      return res.status(200).json( token );
+      return res.status(200).json(token);
     } catch (error) {
       return res.status(500).json(error);
     }
@@ -50,11 +50,13 @@ export class AuthController {
     //get user by the header token
 
     try {
-      const token = req.header('Authorization')?.replace('Bearer ', '');
+      let token = req.header('Authorization')?.replace('Bearer ', '');
+      token =  token.replace(/"/g, '');
+      Logger.info(token);
       if (!token) {
         return res.status(401).json({ message: 'Unauthorized: No token provided' });
       }
-      const decoded = jwt.verify(JSON.parse(token), 'secret');
+      const decoded = jwt.verify(token, 'secret');
       Logger.info(decoded);
       const user = await User.findById(decoded.user._id);
       return res.status(200).json(user);
